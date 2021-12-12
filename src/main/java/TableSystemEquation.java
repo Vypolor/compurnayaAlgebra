@@ -6,18 +6,17 @@ import utils.Converter;
 
 public class TableSystemEquation {
 
-    public static List<List<Integer>> getSystemEquation (List<BigInteger> divide, Set<Integer> base) {
+    public static List<List<Integer>> getSystemEquation (List<BigInteger> divide, Set<BigInteger> base) {
         List<List<Integer>> result = new ArrayList<>();
         for(BigInteger currentDivide : divide) {
             List<Integer> listForCurrentDivide = new ArrayList<>();
-            for(Integer currentBase : base) {
+            for(BigInteger currentBase : base) {
                 boolean isAtLeastOneValueDivided = true;
-                BigInteger bigIntegerCurrentBase = Converter.getBigIntegerFromInteger(currentBase);
                 int currentUsages = 0;
                 while(isAtLeastOneValueDivided) {
                     isAtLeastOneValueDivided = false;
                     BigInteger[] resultAndRemainder = currentDivide
-                            .divideAndRemainder(bigIntegerCurrentBase);
+                            .divideAndRemainder(currentBase);
                     if(resultAndRemainder[1].equals(BigInteger.ZERO)) {
                         currentDivide = resultAndRemainder[0];
                         isAtLeastOneValueDivided = true;

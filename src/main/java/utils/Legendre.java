@@ -1,76 +1,98 @@
 package utils;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 public class Legendre {
 
-    private static final double EPSILON = 0.00001;
+    private static final BigDecimal BM1 = BigDecimal.valueOf(-1);
+    private static final BigDecimal B0 = BigDecimal.ZERO;
+    private static final BigDecimal B1 = BigDecimal.ONE;
+    private static final BigDecimal B2 = BigDecimal.valueOf(2);
+    private static final BigDecimal B4 = BigDecimal.valueOf(4);
+    private static final BigDecimal B8 = BigDecimal.valueOf(8);
 
-    public static int getSymbol(double a, double p) {
-        if (a - 1.0 < EPSILON) {
+    public static int getSymbol(BigDecimal a, BigDecimal p) {
+        if (a.equals(B1)) {
             return 1;
         }
-        if (a % p == 0) {
+        if (p.equals(B0)){
             return 0;
         }
-        if (a % 2.0 == 0) {
-            double indicator = (Math.pow(p, 2) - 1)/8.0;
-            int currentSymbol = (int)(getSymbol(a/2, p) * (Math.pow(-1, indicator)));
-            System.out.println("Intermediate result: " + a/2 + "/" + p);
+        if (a.remainder(p).equals(B0)) {
+            return 0;
+        }
+        if (a.remainder(B2).equals(B0)) {
+            BigDecimal indicator = getIndicatorForEvenNumber(p);
+            BigDecimal param1 = a.divide(B2);
+            BigDecimal param2 = p;
+
+            BigDecimal currentSymbolB = getIntermediateSymbol(indicator, param1, param2);
+            int currentSymbol = currentSymbolB.intValue();
+            System.out.println("Intermediate result: " + param1 + "/" + param2);
             return currentSymbol;
         } else {
-            double indicator = ((a-1)*(p-1))/4.0;
-            int currentSymbol = (int)(getSymbol(p%a, a) * (Math.pow(-1, indicator)));
-            System.out.println("Intermediate result: " + p%a + "/" + a);
+            BigDecimal indicator = getIndicatorForOddNumber(a,p);
+            BigDecimal param1 = p.remainder(a);
+            BigDecimal param2 = a;
+
+            BigDecimal currentSymbolB = getIntermediateSymbol(indicator, param1, param2);;
+            int currentSymbol = currentSymbolB.intValue();
+            System.out.println("Intermediate result: " + param1 + "/" + param2);
             return currentSymbol;
         }
     }
 
-    public static int getSymbolB(BigDecimal a, BigDecimal p) {
-        if (a.subtract(BigDecimal.valueOf(1.0)).equals(BigDecimal.ZERO)) {
-            return 1;
-        }
-        if (gcdB(a,p).equals(BigDecimal.valueOf(0.0))) {
-            return 0;
-        }
-        if (gcdB(a,BigDecimal.valueOf(2.0)).equals(BigDecimal.valueOf(0.0))) {
-            BigDecimal indicatorN = (powB(p, BigDecimal.valueOf(2.0))).subtract(BigDecimal.ONE);
-            BigDecimal indicator = indicatorN.divide(BigDecimal.valueOf(8.0));
-            int symbol = getSymbolB(a.divide(BigDecimal.valueOf(2.0)), p);
-            BigDecimal symbolB = BigDecimal.valueOf(symbol);
-            BigDecimal currentSymbol = symbolB.multiply(powB(BigDecimal.valueOf(-1.0), indicator));
-            System.out.println("Intermediate result: " + a.divide(BigDecimal.valueOf(2.0)) + "/" + p);
-            return Integer.parseInt(currentSymbol.toString());
-        } else {
-            BigDecimal indicatorN1 = a.subtract(BigDecimal.ONE);
-            BigDecimal indicatorN2 = p.subtract(BigDecimal.ONE);
-            BigDecimal indicatorN = indicatorN1.multiply(indicatorN2);
-            BigDecimal indicator = indicatorN.divide(BigDecimal.valueOf(4.0));
-            int symbol = getSymbolB(gcdB(p,a), a);
-            BigDecimal symbolB = BigDecimal.valueOf(symbol);
-            BigDecimal currentSymbol = symbolB.multiply(powB(BigDecimal.valueOf(-1.0), indicator));
-            System.out.println("Intermediate result: " + gcdB(p,a) + "/" + a);
-            if (currentSymbol.toString().equals("0.00") || currentSymbol.toString().contains("0E")) {
-                return 0;
+    private static BigDecimal powerBig(BigDecimal base, BigDecimal exponent) {
+
+        if (base.equals(BM1)) {
+            if (exponent.remainder(B2).equals(B0)) {
+                return B1;
             }
-            return Integer.parseInt(currentSymbol.toString());
+            else
+            {
+                return BM1;
+            }
         }
+
+
+        BigDecimal ans=  B1;
+        BigDecimal k=  B1;
+        BigDecimal t=  BM1;
+        BigDecimal no=  B0;
+
+        if (exponent != no) {
+            BigDecimal absExponent =  exponent.signum() > 0 ? exponent : t.multiply(exponent);
+            while (absExponent.signum() > 0){
+                ans =ans.multiply(base);
+                absExponent = absExponent.subtract(B1);
+            }
+
+            if (exponent.signum() < 0) {
+                // For negative exponent, must invert
+                ans = k.divide(ans);
+            }
+        } else {
+            // exponent is 0
+            ans = k;
+        }
+
+        return ans;
     }
 
-
-
-    private static BigDecimal powB(BigDecimal a, BigDecimal exp) {
-        for (BigDecimal i = BigDecimal.ZERO; i.compareTo(exp) < 1; i = i.add(BigDecimal.ONE)) {
-           a = a.multiply(a);
-        }
-        return a;
+    private static BigDecimal getIndicatorForEvenNumber(BigDecimal p) {
+        BigDecimal indicatorNumerator = (powerBig(p, B2)).subtract(B1);
+        return indicatorNumerator.divide(B8);
     }
 
-    private static BigDecimal gcdB(BigDecimal a, BigDecimal b) {
-        if (b.equals(BigDecimal.valueOf(0.0)) || b.equals(BigDecimal.ZERO))
-            return BigDecimal.valueOf(0.0);
-        BigDecimal[] bigDecimals = a.divideAndRemainder(b);
-        return bigDecimals[1];
+    private static BigDecimal getIndicatorForOddNumber(BigDecimal oddNum, BigDecimal p) {
+        BigDecimal indicatorNumerator1 = oddNum.subtract(B1);
+        BigDecimal indicatorNumerator2 = p.subtract(B1);
+        BigDecimal indicatorNumerator = indicatorNumerator1.multiply(indicatorNumerator2);
+        return indicatorNumerator.divide(B4);
+    }
+
+    private static BigDecimal getIntermediateSymbol(BigDecimal indicator, BigDecimal param1, BigDecimal param2) {
+        BigDecimal multiplier = powerBig(BM1, indicator);
+        return multiplier.multiply(BigDecimal.valueOf(getSymbol(param1, param2)));
     }
 }
