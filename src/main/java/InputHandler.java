@@ -17,14 +17,10 @@ public class InputHandler {
 
     public static void main(String[] args) throws IOException {
 
-        BigInteger firstPrime = new BigInteger("99999999999999999999").nextProbablePrime();
-        BigInteger seconPrime = new BigInteger("999999999999999999999").nextProbablePrime();
-
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        //System.out.println("Enter N, B and A values: \n[N] - value: ");
-        //BigInteger nParam = new BigInteger(reader.readLine());
-        BigInteger nParam = firstPrime.multiply(seconPrime);
+        System.out.println("Enter N, B and A values: \n[N] - value: ");
+        BigInteger nParam = new BigInteger(reader.readLine());
 
         System.out.println("[B] - value: ");
         BigInteger beta = new BigInteger(reader.readLine());
