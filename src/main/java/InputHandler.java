@@ -1,31 +1,30 @@
+import com.sun.deploy.util.OrderedHashSet;
 import eqations.EquationsSystemResolver;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+
+import java.io.*;
 import java.math.BigInteger;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 import utils.Calculator;
 import utils.FactorBase;
+import utils.Legendre;
 
 public class InputHandler {
 
 
     public static void main(String[] args) throws IOException {
-        /*System.out.println(Legendre.getSymbol(17, 11));
-        System.out.println(Legendre.getSymbolB(BigDecimal.valueOf(17), BigDecimal.valueOf(11)));*/
+
+        BigInteger firstPrime = new BigInteger("99999999999999999999").nextProbablePrime();
+        BigInteger seconPrime = new BigInteger("999999999999999999999").nextProbablePrime();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        System.out.println("Enter N, B and A values: \n[N] - value: ");
-        //String temp = reader.readLine();
-
-        BigInteger int1 = new BigInteger("99999999").nextProbablePrime();
-        BigInteger int2 = new BigInteger("999999999").nextProbablePrime();
-        BigInteger int3 = int1.multiply(int2);
-        System.out.println(int3);
-        BigInteger nParam = int3;//= new BigInteger(temp);
+        //System.out.println("Enter N, B and A values: \n[N] - value: ");
+        //BigInteger nParam = new BigInteger(reader.readLine());
+        BigInteger nParam = firstPrime.multiply(seconPrime);
 
         System.out.println("[B] - value: ");
         BigInteger beta = new BigInteger(reader.readLine());

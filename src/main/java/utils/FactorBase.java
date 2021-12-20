@@ -13,26 +13,36 @@ import java.util.Set;
 @Getter @Setter
 public class FactorBase {
 
-    private BigDecimal number;
+    private BigInteger number;
     private BigInteger limit;
     private Set<BigInteger> base;
 
     public FactorBase(BigInteger limit, BigInteger number) {
         this.limit = limit;
-        this.number = new BigDecimal(number.toString());
+        this.number = new BigInteger(number.toString());
         generateBase();
     }
-
     private void generateBase() {
         base = new HashSet<>();
-        for (BigInteger i = BigInteger.ZERO; !i.equals(limit); i = i.add(BigInteger.ONE)) {
-            BigDecimal iB = new BigDecimal(i.toString());
-            if (i.isProbablePrime(1) && Legendre.getSymbol(number, iB) == 1) {
-                base.add(new BigInteger(iB.toString()));
+        base.add(BigInteger.valueOf(2));
+        for (BigInteger i = BigInteger.valueOf(3L); !i.equals(limit.add(BigInteger.ONE)); i = i.add(BigInteger.valueOf(2L))) {
+            if (i.isProbablePrime((int)Math.log(i.doubleValue())) && Legendre.getSymbol(number, i) == 1) {
+                base.add(i);
             }
         }
         if (base.contains(0)) {
             base.remove(0);
         }
     }
+
+    public static boolean isPrime(BigInteger num) {
+        BigInteger sqrtNum = Calculator.sqrtN(num);
+        for (BigInteger i = BigInteger.valueOf(3L); i.compareTo(sqrtNum) < 1; i = i.add(BigInteger.valueOf(2L))) {
+            if (num.remainder(i).equals(BigInteger.ZERO)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
