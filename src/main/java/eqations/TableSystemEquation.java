@@ -1,22 +1,30 @@
+package eqations;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import utils.Converter;
 
 public class TableSystemEquation {
 
-    public static List<List<Integer>> getSystemEquation (List<BigInteger> divide, Set<BigInteger> base) {
+    public static List<List<Integer>> getSystemEquation (List<BigInteger> sievedValues, Set<BigInteger> base) {
         List<List<Integer>> result = new ArrayList<>();
-        for(BigInteger currentDivide : divide) {
+
+        for(BigInteger currentDivide : sievedValues) {
+
             List<Integer> listForCurrentDivide = new ArrayList<>();
+
             for(BigInteger currentBase : base) {
+
                 boolean isAtLeastOneValueDivided = true;
                 int currentUsages = 0;
+
                 while(isAtLeastOneValueDivided) {
+
                     isAtLeastOneValueDivided = false;
                     BigInteger[] resultAndRemainder = currentDivide
                             .divideAndRemainder(currentBase);
+
                     if(resultAndRemainder[1].equals(BigInteger.ZERO)) {
                         currentDivide = resultAndRemainder[0];
                         isAtLeastOneValueDivided = true;
@@ -27,7 +35,9 @@ public class TableSystemEquation {
             }
             result.add(listForCurrentDivide);
         }
-        return convertMatrix(getMatrixModTwo(result));
+        List<List<Integer>> resultMatrix = convertMatrix(getMatrixModTwo(result));
+        printMatrix(resultMatrix);
+        return resultMatrix;
     }
 
     private static List<List<Integer>> getMatrixModTwo(List<List<Integer>> usagesMatrix) {
@@ -57,5 +67,12 @@ public class TableSystemEquation {
             resultList.add(curList);
         }
         return resultList;
+    }
+
+    private static void printMatrix(List<List<Integer>> resultMatrix) {
+        System.out.println("=========== RESULT MATRIX ===========");
+        for (int i = 0; i < resultMatrix.size(); ++i) {
+            System.out.println(resultMatrix.get(i));
+        }
     }
 }

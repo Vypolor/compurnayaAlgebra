@@ -28,6 +28,14 @@ public class EquationsSystemResolver {
             }
             binaryNumber.increment();
         }
+        printResolutions(resolutions);
         return resolutions;
+    }
+
+    private static void printResolutions(List<List<Integer>> equationsResolutions) {
+        System.out.println("=========== EQUATIONS RESOLUTIONS ===========");
+        for (int i = 0; i < equationsResolutions.size(); ++i) {
+            System.out.println(equationsResolutions.get(i));
+        }
     }
 }

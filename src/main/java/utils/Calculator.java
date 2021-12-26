@@ -1,105 +1,67 @@
 package utils;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
+import static utils.BigIntegerConstants.B1;
 
 public class Calculator {
 
-    public static BigInteger roundedSqrtN(BigInteger n) {
-        if (n.compareTo(BigInteger.ZERO) < 0) {
-            throw new IllegalArgumentException("Negative argument");
+    private static final Double C_CONST = 0.71;
+
+    private static final String X_VARIABLE = "X";
+    private static final String Y_VARIABLE = "Y";
+
+    public static BigInteger calculateB(BigInteger nParam) {
+        double sqrt = Math.sqrt(Math.log(nParam.doubleValue()) * Math.log(Math.log(nParam.doubleValue())));
+        double lFunctionValue = Math.pow(Math.E, sqrt);
+        double bParam = Math.pow(lFunctionValue, C_CONST);
+        BigDecimal bParamDecimal = new BigDecimal(String.valueOf(bParam));
+        return bParamDecimal.toBigInteger();
+    }
+
+    public static MutablePair<List<BigInteger>, List<BigInteger>> prepareTableForSieve(Integer aParam, BigInteger nParam) {
+        MutablePair<List<BigInteger>, List<BigInteger>> tableForSieve = new MutablePair<>();
+        BigInteger sqrtN = nParam.sqrt().add(B1);
+
+        List<BigInteger> indexes = new ArrayList<>();
+        List<BigInteger> valuesForSieve = new ArrayList<>();
+
+        for(int i = 0; i <= aParam; ++i) {
+            BigInteger x = sqrtN.add(Converter.getBigIntegerFromInteger(i));
+            BigInteger q = calculateQfromX(nParam, x);
+
+            indexes.add(x);
+            valuesForSieve.add(q);
         }
-        if (n.equals(BigInteger.ZERO) || n.equals(BigInteger.ONE)) {
-            return n;
-        }
-        BigInteger two = BigInteger.valueOf(2L);
-        BigInteger sqrValue;
-        for (sqrValue = n.divide(two); sqrValue
-                .compareTo(n.divide(sqrValue)) > 0; sqrValue = ((n.divide(sqrValue)).add(sqrValue).divide(two)));
-        return sqrValue.add(BigInteger.ONE);
+        tableForSieve.setLeft(indexes);
+        tableForSieve.setRight(valuesForSieve);
+        return tableForSieve;
     }
 
-    public static BigInteger sqrtN(BigInteger n) {
-        return roundedSqrtN(n).subtract(BigInteger.ONE);
-    }
-
-    private static BigInteger calculateQfromX(BigInteger n, BigInteger m) {
-        BigInteger sqr = m;
-        sqr = sqr.multiply(sqr);
-        return sqr.subtract(n);
-    }
-
-    public static Map<BigInteger, BigInteger> getPairTableD(Integer a, BigInteger sqrtN, BigInteger n) {
-        Map<BigInteger, BigInteger> dTable = new HashMap<>();
-        BigInteger m;
-        for(int i = 0; i <= a; ++i) {
-            m = sqrtN.add(Converter.getBigIntegerFromInteger(i));
-            dTable.put(m, calculateQfromX(n, m));
-        }
-        return dTable;
-    }
-
-    private static List<BigInteger> getKeysByValues(List<BigInteger> divide, Map<BigInteger, BigInteger> dTable) {
-        List<BigInteger> keys = new ArrayList<>();
-        for(Map.Entry<BigInteger, BigInteger> curTableElem : dTable.entrySet()) {
-            for(BigInteger curDivide : divide) {
-                if(curDivide.equals(curTableElem.getValue())) {
-                    keys.add(curTableElem.getKey());
-                }
-            }
-        }
-        return keys;
-    }
-
-    public static List<List<BigInteger>> decompose(List<List<Integer>> resolutions
-            , List<BigInteger> divide, Map<BigInteger, BigInteger> dTable, BigInteger n) {
-        List<BigInteger> keys = getKeysByValues(divide, dTable);
-        List<BigInteger> yList = calculateY(resolutions, divide);
-        List<BigInteger> xList = calculateX(resolutions, keys);
+    public static List<List<BigInteger>> decompose(List<List<Integer>> equationsSystemResolutions,
+                                                   List<BigInteger> siftedValues,
+                                                   List<BigInteger> keysOfSiftedValues, BigInteger n) {
+        List<BigInteger> yList = calculateVariable(equationsSystemResolutions, siftedValues, Y_VARIABLE);
+        List<BigInteger> xList = calculateVariable(equationsSystemResolutions, keysOfSiftedValues, X_VARIABLE);
         List<BigInteger> deltaList = calculateDeltaList(yList, xList);
 
         return decompose(deltaList, n);
     }
 
-    private static List<BigInteger> calculateDeltaList(List<BigInteger> yList, List<BigInteger> xList) {
-        List<BigInteger> result = new ArrayList<>();
-        for(int i = 0; i < yList.size(); ++i) {
-            result.add(xList.get(i).subtract(yList.get(i)));
-        }
-        return result;
+    public static Set<List<BigInteger>> getUniqueResolutions(List<List<BigInteger>> resultNotUniqueList) {
+        return new HashSet<>(resultNotUniqueList);
     }
 
-    private static List<BigInteger> calculateY(List<List<Integer>> resolutions, List<BigInteger> divide) {
-        List<BigInteger> result = new ArrayList<>();
-        for(List<Integer> curResolution : resolutions) {
-            BigInteger sum = new BigInteger("1");
-            for(int i = 0; i < curResolution.size(); ++i) {
-                if(curResolution.get(i) == 1) {
-                    sum = sum.multiply(divide.get(i));
-                }
-            }
-            result.add(sqrtN(sum));
-        }
-        return result;
-    }
-
-    private static List<BigInteger> calculateX(List<List<Integer>> resolutions, List<BigInteger> keys) {
-        List<BigInteger> result = new ArrayList<>();
-        for(List<Integer> curResolution : resolutions) {
-            BigInteger sum = new BigInteger("1");
-            for(int i = 0; i < curResolution.size(); ++i) {
-                if(curResolution.get(i) == 1) {
-                    sum = sum.multiply(keys.get(i));
-                }
-            }
-            result.add(sum);
-        }
-        return result;
+    private static BigInteger calculateQfromX(BigInteger q, BigInteger x) {
+        BigInteger sqrX = x.pow(2);
+        return sqrX.subtract(q);
     }
 
     private static List<List<BigInteger>> decompose(List<BigInteger> deltaList, BigInteger n) {
@@ -116,9 +78,36 @@ public class Calculator {
         return result;
     }
 
-    public static Set<List<BigInteger>> getUniqueResolutions(List<List<BigInteger>> resultNotUniqueList) {
-        Set<List<BigInteger>> result = new HashSet<>(resultNotUniqueList);
+    private static List<BigInteger> calculateDeltaList(List<BigInteger> yList, List<BigInteger> xList) {
+        List<BigInteger> result = new ArrayList<>();
+        for(int i = 0; i < yList.size(); ++i) {
+            result.add(xList.get(i).subtract(yList.get(i)));
+        }
         return result;
     }
 
+    private static List<BigInteger> calculateVariable(List<List<Integer>> resolutions, List<BigInteger> divide, String calculableVariable) {
+        List<BigInteger> result = new ArrayList<>();
+        for(List<Integer> curResolution : resolutions) {
+            BigInteger sum = B1;
+            for(int i = 0; i < curResolution.size(); ++i) {
+                if(curResolution.get(i) == 1) {
+                    sum = sum.multiply(divide.get(i));
+                }
+            }
+            if (calculableVariable.equals(X_VARIABLE))
+            {
+                result.add(sum);
+            }
+            else if (calculableVariable.equals(Y_VARIABLE))
+            {
+                result.add(sum.sqrt());
+            }
+            else {
+                throw new RuntimeException("Could not find variable. Must be X or Y");
+            }
+
+        }
+        return result;
+    }
 }

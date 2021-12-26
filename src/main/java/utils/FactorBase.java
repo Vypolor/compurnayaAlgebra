@@ -1,13 +1,14 @@
 package utils;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashSet;
+import java.math.BigInteger;
+import java.util.LinkedHashSet;
 import java.util.Set;
+
+import static utils.BigIntegerConstants.B2;
 
 @Data
 @Getter @Setter
@@ -23,14 +24,16 @@ public class FactorBase {
         generateBase();
     }
     private void generateBase() {
-        base = new HashSet<>();
-        base.add(BigInteger.valueOf(2));
-        for (BigInteger i = BigInteger.valueOf(3L); !i.equals(limit.add(BigInteger.ONE)); i = i.add(BigInteger.ONE)) {
-            if (i.isProbablePrime(1) && Legendre.getSymbol(number, i) == 1) {
-                base.add(i);
+        base = new LinkedHashSet<>();
+        BigInteger lastProbablePrime = B2;
+        base.add(lastProbablePrime);
+
+        for (; lastProbablePrime.compareTo(limit) < 0; lastProbablePrime = lastProbablePrime.nextProbablePrime()) {
+            BigInteger candidate = lastProbablePrime.nextProbablePrime();
+            if (Legendre.getSymbol(number, candidate) == 1) {
+                base.add(candidate);
             }
         }
-        base.remove(BigInteger.ZERO);
     }
 
 }
